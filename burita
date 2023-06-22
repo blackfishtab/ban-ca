@@ -1,0 +1,102 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the game window
+window_width = 800
+window_height = 600
+window = pygame.display.set_mode((window_width, window_height))
+pygame.display.set_caption("Fish Shooting Game")
+
+# Set up colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+
+# Set up the player
+player_width = 50
+player_height = 50
+player_x = window_width // 2 - player_width // 2
+player_y = window_height - player_height
+player_speed = 5
+player = pygame.Rect(player_x, player_y, player_width, player_height)
+
+# Set up the fish
+fish_width = 50
+fish_height = 50
+fish_speed = 3
+fish_count = 6
+fishes = []
+for _ in range(fish_count):
+    fish_x = random.randint(0, window_width - fish_width)
+    fish_y = random.randint(50, 200)
+    fish = pygame.Rect(fish_x, fish_y, fish_width, fish_height)
+    fishes.append(fish)
+
+# Set up the game clock
+clock = pygame.time.Clock()
+
+# Set up the game variables
+score = 0
+game_over = False
+
+# Set up the game fonts
+font = pygame.font.SysFont(None, 36)
+
+# Game loop
+while not game_over:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_over = True
+
+    # Move the player
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player.x -= player_speed
+    if keys[pygame.K_RIGHT]:
+        player.x += player_speed
+
+    # Update the game logic
+    for fish in fishes:
+        fish.y += fish_speed
+
+        if fish.colliderect(player):
+            score += 1
+            fishes.remove(fish)
+
+        if fish.y > window_height:
+            fish.x = random.randint(0, window_width - fish_width)
+            fish.y = random.randint(50, 200)
+
+    # Draw the game objects
+    window.fill(white)
+    pygame.draw.rect(window, black, player)
+    for fish in fishes:
+        pygame.draw.rect(window, black, fish)
+
+    # Display the score
+    score_text = font.render("Score: " + str(score), True, black)
+    window.blit(score_text, (10, 10))
+
+    # Check if the game is over
+    if player.y < 50:
+        game_over = True
+
+    # Update the game display
+    pygame.display.update()
+    clock.tick(60)
+
+# Game over screen
+window.fill(white)
+game_over_text = font.render("Game Over", True, black)
+score_text = font.render("Final Score: " + str(score), True, black)
+window.blit(game_over_text, (window_width // 2 - game_over_text.get_width() // 2, window_height // 2 - 50))
+window.blit(score_text, (window_width // 2 - score_text.get_width() // 2, window_height // 2))
+pygame.display.update()
+
+# Wait for a few seconds before quitting
+pygame.time.wait(3000)
+
+# Quit Pygame
+pygame.quit()
